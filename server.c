@@ -50,7 +50,9 @@ void* redirect_client(void* client_void){
 	hostinfo = gethostbyname(hostname); /* on récupère les informations de l'hôte auquel on veut se connecter */
 	if (hostinfo == NULL) /* l'hôte n'existe pas */
 	{
+		#ifdef DEBUG
 		printf ("Unknown host %s.\n", hostname);
+		#endif
 		pthread_exit(NULL);
 	}
 
@@ -60,7 +62,9 @@ void* redirect_client(void* client_void){
 
 	if(connect(client.target,(SOCKADDR *) &sin, sizeof(SOCKADDR)) == SOCKET_ERROR)
 	{
-		printf("connect()");
+		#ifdef DEBUG
+		printf("Connexion failed");
+		#endif
 		pthread_exit(NULL);
 	}
 	else{

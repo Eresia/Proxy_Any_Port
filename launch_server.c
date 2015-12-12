@@ -7,7 +7,7 @@
 */
 int main(int argc, char** argv){
 
-	int nbArgc = 1, port, portRedirection;
+	int nbArgc = 3, port, portRedirection;
 	char* redirection;
 	int resultServ;
 	char* msg;
@@ -22,8 +22,8 @@ int main(int argc, char** argv){
 	}
 
 	port = atoi(argv[1]);
-	redirection = "minecraft.mtxserv.fr";
-	portRedirection = 27050;
+	redirection = argv[2];
+	portRedirection = atoi(argv[3]);
 
 	if((port == 0) || (portRedirection == 0)){
 		msg = "Incorrect arguments\n";
