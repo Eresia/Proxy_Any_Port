@@ -64,11 +64,15 @@
     typedef struct Client Client;
     struct Client{
         SOCKET socket;
-        SOCKADDR_IN information;
+        //SOCKADDR_IN information;
+		char* targetName;
+		int portTarget;
+		SOCKET target;
     };
 
     int launch_server(int, char*, int);
-    void* redirect_client(void* client);
+    void* redirect_client(void*);
+	void* redirect_to_client(void*);
     int begin_listen(SOCKET*, SOCKADDR_IN*, int);
 
 #endif
