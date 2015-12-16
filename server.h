@@ -4,6 +4,8 @@
 	#define NB_CLIENT_MAX 100
 	#define NB_DELTA_MAX 1000
 
+	#define NB_ARGUMENT 3
+
 	/*Returns and errors :
 		0 : No error
 		1 : Bad number of arguments
@@ -77,6 +79,7 @@
     int launch_server(int, char*, int);
     void* redirect_client(void*);
 	void* redirect_to_client(void*);
+	void listening_socket(Client, SOCKET, SOCKET);
     int begin_listen(SOCKET*, SOCKADDR_IN*, int);
 
 #endif
