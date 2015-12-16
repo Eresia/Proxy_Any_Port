@@ -79,7 +79,7 @@ void* redirect_client(void* client_void){
 	else{
 		int n = 0;
 		#ifdef DEBUG
-		printf("Connexion à %s réussi\n", client.targetName);
+		printf("Connexion to %s succes\n", client.targetName);
 		#endif
 		pthread_t thread;
 		char* buffer = malloc(100*sizeof(char));
@@ -109,7 +109,7 @@ void* redirect_client(void* client_void){
 			}
 			else{
 				#ifdef DEBUG
-				printf("Client send a message de taille %d\n", n);
+				printf("Client send a message of size : %d\n", n);
 				#endif
 				pthread_mutex_lock(&client.mutexConnexion);
 				connexionLost = *client.connexionLost;
@@ -166,7 +166,7 @@ void* redirect_to_client(void* client_void){
 		}
 		else{
 			#ifdef DEBUG
-			printf("Server send a message de taille %d\n", n);
+			printf("Server send a message of size : %d\n", n);
 			#endif
 			pthread_mutex_lock(&client.mutexConnexion);
 			connexionLost = *client.connexionLost;
