@@ -68,6 +68,10 @@
 		char* targetName;
 		int portTarget;
 		SOCKET target;
+		//pthread_mutex_t mutexSocket;
+		//pthread_mutex_t mutexTarget;
+		pthread_mutex_t mutexConnexion;
+		bool* connexionLost;
     };
 
     int launch_server(int, char*, int);

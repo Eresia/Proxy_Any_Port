@@ -34,6 +34,9 @@ int main(int argc, char** argv){
 		return INCORRECT_ARGUMENT;
 	}
 
+	#ifdef DEBUG
+		printf("Launch server for redirection to %s in port %d\n", redirection, portRedirection);
+	#endif
 	resultServ = launch_server(port, redirection, portRedirection);
 	if(resultServ != NO_ERROR){
 		msg = "Server stopped with errors\n";

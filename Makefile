@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -DDEBUG
-OUTFLAGS= -lpthread
+OUTFLAGS= -lpthread -g
 
 all: launch_server.out
 

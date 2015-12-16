@@ -25,6 +25,14 @@ int launch_server(int port, char* redirection, int portRedirection){
 				printf("Client connected\n");
 				#endif
 				Client newClient = client;
+				//pthread_mutex_t mutexSocket = PTHREAD_MUTEX_INITIALIZER;
+				//pthread_mutex_t mutexTarget = PTHREAD_MUTEX_INITIALIZER;
+				//newClient.mutexSocket = mutexSocket;
+				//newClient.mutexTarget = mutexTarget;
+				pthread_mutex_t mutexConnexion = PTHREAD_MUTEX_INITIALIZER;
+				newClient.mutexConnexion = mutexConnexion;
+				newClient.connexionLost = malloc(sizeof(bool));
+				*newClient.connexionLost = false;
 				pthread_t thread;
 				if(pthread_create(&thread, NULL, redirect_client, &newClient) != 0){
 					#ifdef DEBUG
@@ -53,6 +61,7 @@ void* redirect_client(void* client_void){
 		#ifdef DEBUG
 		printf ("Unknown host %s.\n", hostname);
 		#endif
+		closesocket(client.socket);
 		pthread_exit(NULL);
 	}
 
@@ -63,29 +72,123 @@ void* redirect_client(void* client_void){
 	if(connect(client.target,(SOCKADDR *) &sin, sizeof(SOCKADDR)) == SOCKET_ERROR)
 	{
 		#ifdef DEBUG
-		printf("Connexion failed");
+		printf("Connexion failed\n");
 		#endif
 		pthread_exit(NULL);
 	}
 	else{
+		int n = 0;
+		#ifdef DEBUG
+		printf("Connexion à %s réussi\n", client.targetName);
+		#endif
 		pthread_t thread;
 		char* buffer = malloc(100*sizeof(char));
-		pthread_create(&thread, NULL, redirect_to_client, client_void);
-		while(1){
-			recv(client.socket, buffer, 100, 0);
-			send(client.target, buffer, strlen(buffer), 0);
+		pthread_create(&thread, NULL, redirect_to_client, &client);
+		bool connexionLost;
+		pthread_mutex_lock(&client.mutexConnexion);
+		connexionLost = *client.connexionLost;
+		pthread_mutex_unlock(&client.mutexConnexion);
+		while(connexionLost == false){
+			if((n = recv(client.socket, buffer, 100, 0)) < 0){
+				#ifdef DEBUG
+				printf("Fail to receved message from client\n");
+				#endif
+				pthread_mutex_lock(&client.mutexConnexion);
+				*client.connexionLost = true;
+				pthread_mutex_unlock(&client.mutexConnexion);
+				connexionLost = true;
+			}
+			else if(n == 0){
+				#ifdef DEBUG
+				printf("Closing connexion\n");
+				#endif
+				pthread_mutex_lock(&client.mutexConnexion);
+				*client.connexionLost = true;
+				pthread_mutex_unlock(&client.mutexConnexion);
+				connexionLost = true;
+			}
+			else{
+				#ifdef DEBUG
+				printf("Client send a message de taille %d\n", n);
+				#endif
+				pthread_mutex_lock(&client.mutexConnexion);
+				connexionLost = *client.connexionLost;
+				pthread_mutex_unlock(&client.mutexConnexion);
+				if(connexionLost == false){
+					if(send(client.target, buffer, n, 0) < 0){
+						#ifdef DEBUG
+						printf("Fail to send message to server\n");
+						#endif
+					}
+					else{
+						#ifdef DEBUG
+						printf("Message send to server\n");
+						#endif
+					}
+				}
+			}
 		}
+		#ifdef DEBUG
+		printf("close client\n");
+		#endif
+		closesocket(client.socket);
+		pthread_exit(NULL);
 	}
 	pthread_exit(NULL);
 }
 
 void* redirect_to_client(void* client_void){
 	Client client = *((Client*) client_void);
-	char* buffer = malloc(100*sizeof(char));
-	while(1){
-		recv(client.target, buffer, 100, 0);
-		send(client.socket, buffer, strlen(buffer), 0);
+	unsigned char* buffer = malloc(100*sizeof(unsigned char));
+	int n = 0;
+	bool connexionLost;
+	pthread_mutex_lock(&client.mutexConnexion);
+	connexionLost = *client.connexionLost;
+	pthread_mutex_unlock(&client.mutexConnexion);
+	while(connexionLost == false){
+		if((n = recv(client.target, buffer, 100, 0)) < 0){
+			#ifdef DEBUG
+			printf("Fail to receved message from server\n");
+			#endif
+			pthread_mutex_lock(&client.mutexConnexion);
+			*client.connexionLost = true;
+			pthread_mutex_unlock(&client.mutexConnexion);
+			connexionLost = true;
+		}
+		else if(n == 0){
+			#ifdef DEBUG
+			printf("Closing connexion\n");
+			#endif
+			pthread_mutex_lock(&client.mutexConnexion);
+			*client.connexionLost = true;
+			pthread_mutex_unlock(&client.mutexConnexion);
+			connexionLost = true;
+		}
+		else{
+			#ifdef DEBUG
+			printf("Server send a message de taille %d\n", n);
+			#endif
+			pthread_mutex_lock(&client.mutexConnexion);
+			connexionLost = *client.connexionLost;
+			pthread_mutex_unlock(&client.mutexConnexion);
+			if(connexionLost == false){
+				if(send(client.socket, buffer, n, 0) < 0){
+					#ifdef DEBUG
+					printf("Fail to send message to client\n");
+					#endif
+				}
+				else{
+					#ifdef DEBUG
+					printf("Message send to client\n");
+					#endif
+				}
+			}
+		}
 	}
+	#ifdef DEBUG
+	printf("close server\n");
+	#endif
+	closesocket(client.target);
 	pthread_exit(NULL);
 }
 
