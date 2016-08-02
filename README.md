@@ -3,7 +3,9 @@ Programme C pour rediriger des requêtes TCP venant sur un port vers une autre m
 
 ### Utilisation
 
-Make all
+```
+make all
+```
 
 Lancer l'éxécutable avec 3 paramètres : 
 * Le port d'écoute du proxy (ex : 8888)
